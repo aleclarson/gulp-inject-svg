@@ -1,7 +1,8 @@
 var cheerio = require('cheerio')
+var es = require('event-stream')
 var fs = require('fs')
 var url = require('url')
-var es = require('event-stream')
+var path = require('path')
 var iconv = require('iconv-lite')
 var PluginError = require('plugin-error')
 
@@ -19,13 +20,15 @@ module.exports = function (options = {}) {
       xmlMode: false,
       lowerCaseAttributeNames: false,
     })
-    injectSvg(dom, options)
+
+    injectSvg(dom, file, options)
+
     file.contents = iconv.encode(dom.html(), 'utf-8')
     return callback(null, file)
   })
 }
 
-function injectSvg(dom, { base }) {
+function injectSvg(dom, file, { base }) {
   // Regexp for checking if the file ending has .svg
   var testSvg = /^.*.(svg)$/i
 
@@ -41,14 +44,15 @@ function injectSvg(dom, { base }) {
       return
     }
 
-    if (base) {
+    if (base && src[0] == '/') {
       src = base + src
+    } else {
+      src = path.resolve(file.dirname, src)
     }
 
     try {
-      var inlineTag = fs.readFileSync('./' + src).toString()
-
-      var svg = cheerio.load(inlineTag, {
+      var code = fs.readFileSync(src, 'utf8')
+      var svg = cheerio.load(code, {
         decodeEntities: false,
         xmlMode: true,
       })
