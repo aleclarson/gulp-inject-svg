@@ -33,6 +33,9 @@ function injectSvg(dom, { base }) {
   dom('img').each(function (idx, el) {
     el = dom(el)
     var src = el.attr('src')
+    if (!testSvg.test(src) || !isLocal(src)) {
+      return
+    }
 
     if (el.attr('data-skip-inject-svg')) {
       el.removeAttr('data-skip-inject-svg')
@@ -43,37 +46,35 @@ function injectSvg(dom, { base }) {
       src = base + src
     }
 
-    if (testSvg.test(src) && isLocal(src)) {
-      var dir = path.dirname(src)
+    var dir = path.dirname(src)
 
-      try {
-        var inlineTag = fs.readFileSync('./' + src).toString()
+    try {
+      var inlineTag = fs.readFileSync('./' + src).toString()
 
-        var svg = cheerio.load(inlineTag, {
-          decodeEntities: false,
-          xmlMode: true,
-        })
+      var svg = cheerio.load(inlineTag, {
+        decodeEntities: false,
+        xmlMode: true,
+      })
 
-        svg = svg.root().children()
+      svg = svg.root().children()
 
-        var svgAttributes = el[0].attribs
+      var svgAttributes = el[0].attribs
 
-        for (attribute in svgAttributes) {
-          if (validSvgAttribute.indexOf(attribute) !== -1) {
-            if (el.attr(attribute) !== undefined) {
-              svg.attr(attribute, svgAttributes[attribute])
-            }
+      for (attribute in svgAttributes) {
+        if (validSvgAttribute.indexOf(attribute) !== -1) {
+          if (el.attr(attribute) !== undefined) {
+            svg.attr(attribute, svgAttributes[attribute])
           }
         }
-      } catch (e) {
-        throw new PluginError({
-          plugin: 'gulp-inject-svg',
-          message: 'Could not find file SVG file (' + src + ').',
-        })
       }
-
-      el.replaceWith(svg)
+    } catch (e) {
+      throw new PluginError({
+        plugin: 'gulp-inject-svg',
+        message: 'Could not find file SVG file (' + src + ').',
+      })
     }
+
+    el.replaceWith(svg)
   })
 }
 
