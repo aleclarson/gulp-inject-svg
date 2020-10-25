@@ -1,5 +1,4 @@
 var cheerio = require('cheerio')
-var path = require('path')
 var fs = require('fs')
 var url = require('url')
 var es = require('event-stream')
@@ -45,8 +44,6 @@ function injectSvg(dom, { base }) {
     if (base) {
       src = base + src
     }
-
-    var dir = path.dirname(src)
 
     try {
       var inlineTag = fs.readFileSync('./' + src).toString()
