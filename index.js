@@ -28,10 +28,10 @@ module.exports = function (options = {}) {
   })
 }
 
-function injectSvg(dom, file, { base }) {
-  // Regexp for checking if the file ending has .svg
-  var testSvg = /^.*.(svg)$/i
+// Regexp for checking if the file ending has .svg
+var testSvg = /^.*.(svg)$/i
 
+function injectSvg(dom, file, { base }) {
   dom('img').each(function (idx, el) {
     el = dom(el)
     var src = el.attr('src')
